@@ -1,4 +1,8 @@
+// main.rs 
+// RUST_LOG=info cargo run
 use dotenv::dotenv;
+use tracing::info;
+
 use rig::{
     embeddings::EmbeddingsBuilder,
     parallel,
@@ -9,12 +13,15 @@ use rig::{
 
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
+    tracing_subscriber::fmt::init();
+
     dotenv().ok();
     // Create OpenAI client
     let openai_client = Client::from_env();
     let embedding_model = openai_client.embedding_model(TEXT_EMBEDDING_ADA_002);
 
     // Create embeddings for our documents
+    info!("✅ creating embeddings...");
     let embeddings = EmbeddingsBuilder::new(embedding_model.clone())
         .document("Definition of a *flurbo*: A flurbo is a green alien that lives on cold planets")?
         .document("Definition of a *glarb-glarb*: A glarb-glarb is a ancient tool used by the ancestors of the inhabitants of planet Jiro to farm the land.")?
@@ -37,7 +44,7 @@ async fn main() -> Result<(), anyhow::Error> {
     let chain = pipeline::new()
         .chain(parallel!(
             passthrough(),
-            lookup::<_, _, String>(index, 1), // Required to specify document type
+            lookup::<_, _, String>(index,2), // Required to specify document type
         ))
         .map(|(prompt, maybe_docs)| match maybe_docs {
             Ok(docs) => format!(
@@ -56,7 +63,7 @@ async fn main() -> Result<(), anyhow::Error> {
         // Chain a "prompt" operation which will prompt out agent with the final prompt
         .prompt(agent);
 
-    let response = chain.call("What does \"glarb-glarb\" mean?").await?;
+    let response = chain.call("What does \"Glarb-glarb\" mean?").await?;
     println!("{:?}", response);
 
     Ok(())
