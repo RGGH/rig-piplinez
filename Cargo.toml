@@ -1,0 +1,11 @@
+[package]
+name = "rig-piplinez"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0.95"
+async-trait = "0.1.85"
+dotenv = "0.15.0"
+rig-core = "0.7.0"
+tokio = { version = "1.43.0", features = ["macros", "rt-multi-thread"] }
